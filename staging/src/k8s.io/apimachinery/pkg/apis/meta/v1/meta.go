@@ -63,6 +63,8 @@ type Object interface {
 	SetOwnerReferences([]OwnerReference)
 	GetClusterName() string
 	SetClusterName(clusterName string)
+	GetNamespacedName() types.NamespacedName
+	SetNamespacedName(name types.NamespacedName)
 }
 
 // ListMetaAccessor retrieves the list interface from an object
@@ -168,3 +170,11 @@ func (meta *ObjectMeta) SetOwnerReferences(references []OwnerReference) {
 }
 func (meta *ObjectMeta) GetClusterName() string            { return meta.ClusterName }
 func (meta *ObjectMeta) SetClusterName(clusterName string) { meta.ClusterName = clusterName }
+
+func (meta *ObjectMeta) GetNamespacedName() {
+	return types.NamespacedName{Name: meta.Name, Namespace: meta.Namespace}
+}
+func (meta *ObjectMeta) SetNamespacedName(name types.NamespacedName) {
+	meta.Name = name.Name
+	meta.Namespace = name.Namespace
+}

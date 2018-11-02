@@ -450,3 +450,15 @@ func (u *Unstructured) SetClusterName(clusterName string) {
 	}
 	u.setNestedField(clusterName, "metadata", "clusterName")
 }
+
+func (u *Unstructured) GetNamespacedName() types.NamespacedName {
+	return types.NamespacedName{
+		Name:      u.GetName(),
+		Namespace: u.GetNamespace(),
+	}
+}
+
+func (u *Unstructured) SetNamespacedName(name types.NamespacedName) {
+	u.SetName(name.Name)
+	u.SetNamespace(name.Namespace)
+}

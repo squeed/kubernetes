@@ -114,6 +114,15 @@ var (
 		},
 		[]string{"verb", "group", "version", "resource", "subresource", "scope", "component"},
 	)
+	lastRequestTimestamp = compbasemetrics.NewGaugeVec(
+		&compbasemetrics.GaugeOpts{
+			Name:           "apiserver_request_last_timestamp_seconds",
+			Help:           "Timestamp of last apiserver request broken out for each verb, dry run value, group, version, resource, scope, component, client, and HTTP response contentType and code.",
+			StabilityLevel: compbasemetrics.ALPHA,
+		},
+		// this uses the same deprecated labels as apiserver_request_total
+		[]string{"verb", "dry_run", "group", "version", "resource", "subresource", "scope", "component", "client", "contentType", "code"},
+	)
 	deprecatedRequestLatenciesSummary = compbasemetrics.NewSummaryVec(
 		&compbasemetrics.SummaryOpts{
 			Name: "apiserver_request_latencies_summary",
@@ -197,6 +206,7 @@ var (
 		requestLatencies,
 		deprecatedRequestLatencies,
 		deprecatedRequestLatenciesSummary,
+		lastRequestTimestamp,
 		responseSizes,
 		DroppedRequests,
 		DeprecatedDroppedRequests,
@@ -295,6 +305,7 @@ func MonitorRequest(req *http.Request, verb, group, version, resource, subresour
 	requestLatencies.WithLabelValues(reportedVerb, dryRun, group, version, resource, subresource, scope, component).Observe(elapsedSeconds)
 	deprecatedRequestLatencies.WithLabelValues(reportedVerb, group, version, resource, subresource, scope, component).Observe(elapsedMicroseconds)
 	deprecatedRequestLatenciesSummary.WithLabelValues(reportedVerb, group, version, resource, subresource, scope, component).Observe(elapsedMicroseconds)
+	lastRequestTimestamp.WithLabelValues(reportedVerb, dryRun, group, version, resource, subresource, scope, component, client, contentType, codeToString(httpCode)).SetToCurrentTime()
 	// We are only interested in response sizes of read requests.
 	if verb == "GET" || verb == "LIST" {
 		responseSizes.WithLabelValues(reportedVerb, group, version, resource, subresource, scope, component).Observe(float64(respSize))
